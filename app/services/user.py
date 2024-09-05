@@ -4,9 +4,11 @@ from datetime import timedelta
 import jwt
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-from models.user import UserClaims
+from models.user import UserClaims, UserModel
 from entities.user import User, verify_password
 from services.utils import get_current_timestamp
+from services import utils
+from entities.user import get_password_hash
 from settings import JWT_ALGORITHM, JWT_SECRET
 
 
@@ -34,3 +36,21 @@ def authenticate_user(username: str, password: str, db: Session):
     if not verify_password(password, user.hashed_password):
         return False
     return user
+
+def get_users(db: Session) -> list[User]:
+    result = db.scalars(select(User).order_by(User.created_at))
+    
+    return result.all()
+
+# def add_new_user(db: Session, data: UserModel) -> User:
+#     # del data.password
+#     user = User(**data.model_dump())
+
+#     user.created_at = utils.get_current_utc_time()
+#     user.updated_at = utils.get_current_utc_time()
+    
+#     db.add(user)
+#     db.commit()
+#     db.refresh(user)
+    
+#     return user
